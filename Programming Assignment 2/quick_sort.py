@@ -1,5 +1,7 @@
 import sys
-import random
+# use numpy to enable in-place sorting. Info on lists vs. numpy arrays
+# here: https://webcourses.ucf.edu/courses/1249560/pages/python-lists-vs-numpy-arrays-what-is-the-difference
+import numpy as np
 
 
 class quick_sort():
@@ -8,16 +10,21 @@ class quick_sort():
         assert (pivot in ('first', 'last', 'median')), "Pivot type not \
             recognized"
         self.pivot = pivot
-        self._sort(array, len(array))
+        self.array = np.array(array)
+        self._sort(self.array, len(array))
 
     def _sort(self, array, n):
+
         if n > 1:
             self.num_comparisons += n - 1
-            p = self._choose_pivot(array, n)
-            a, b = self._partition(array)
-            return self._sort(a, len(a)) + [p] + self._sort(b, len(b))
+            self._choose_pivot(array, n) # move pivot to front of array
+            pivot_location = self._partition(array)
+            a, b = array[0: pivot_location], array[pivot_location+1:]
+            self._sort(a, len(a))
+            self._sort(b, len(b))
+            return None
         else:
-            return array
+            return None
 
     def _choose_pivot(self, array, n):
         pivot_location = None
@@ -26,27 +33,29 @@ class quick_sort():
         else:
             pivot_location = int(n / 2)
 
-        # move pivot to front, move front value to index of pivot
+        # move pivot to front, move front to index vacated by pivot
         array[0], array[pivot_location] = array[pivot_location], array[0]
         return array[0]
 
     def _partition(self, array):
         pivot = array[0]
-        i = 0
+        i = 1
 
         for j in range(1, len(array)):
-            # i marks the right-most value that is less than or equal to the
-            # pivot. If x is less than or equal to the pivot, swap the value
-            # x with the value at i+1 and increment the pointer i. If x is
-            # greater than the pivot, continue to the next value value in
-            # the array
-
-            x = array[j]
-            if x <= pivot:
-                array[j], array[i + 1] = array[i + 1], array[j]
+            # i marks the left-most value that is more than the
+            # pivot. If array[j] is less than or equal to the pivot, swap the
+            # value at j with the value at i and increment the pointer i.
+            # If x is greater than the pivot, continue to the next value
+            # in the array
+            if array[j] <= pivot:
+                array[j], array[i] = array[i], array[j]
                 i += 1
 
-        return array[1:i+1], array[i+1:]
+        # After the loop has run, i marks one to the right of where the pivot
+        # should be placed. Position the pivot in its correct place before
+        # returning
+        array[i-1], array[0] = array[0], array[i-1]
+        return i-1
 
 
 if __name__ == '__main__':
@@ -55,5 +64,5 @@ if __name__ == '__main__':
     with open(filename) as f:
         int_list = [int(val.strip()) for val in f.readlines()]
 
-    qs = quick_sort(int_list, 'first')
+    qs = quick_sort(int_list, 'last')
     print(qs.num_comparisons)
