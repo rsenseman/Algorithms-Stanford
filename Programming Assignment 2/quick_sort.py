@@ -14,37 +14,64 @@ class quick_sort():
         self._sort(self.array, len(array))
 
     def _sort(self, array, n):
-
         if n > 1:
             self.num_comparisons += n - 1
-            self._choose_pivot(array, n) # move pivot to front of array
-            pivot_location = self._partition(array)
-            a, b = array[0: pivot_location], array[pivot_location+1:]
+
+            self._choose_pivot(array, n)  # move pivot to front of array
+            pivot_final_location = self._partition(array)
+            a, b = array[0: pivot_final_location], array[pivot_final_location+1:]
+
             self._sort(a, len(a))
             self._sort(b, len(b))
+
             return None
+
         else:
             return None
 
     def _choose_pivot(self, array, n):
-        pivot_location = None
         if self.pivot == 'first': pivot_location = 0
         elif self.pivot == 'last': pivot_location = n - 1
         else:
-            pivot_location = int(n / 2)
+            first_val = array[0]
+            last_val = array[-1]
+            if n % 2 == 0:
+                middle_index = int(n/2 - 1)
+            else:
+                middle_index = int(n / 2.0)
+            middle_val = array[middle_index]
 
-        # move pivot to front, move front to index vacated by pivot
+            # go through all possibilities to determine the median of the
+            # three values: first, last and middle.
+            if first_val < last_val:
+                if first_val > middle_val:
+                    pivot_location = 0
+                else:
+                    if middle_val < last_val:
+                        pivot_location = middle_index
+                    else:
+                        pivot_location = n - 1
+            else:
+                if last_val > middle_val:
+                    pivot_location = n - 1
+                else:
+                    if middle_val < first_val:
+                        pivot_location = middle_index
+                    else:
+                        pivot_location = 0
+
+        # move pivot to front, move front to space vacated by pivot
         array[0], array[pivot_location] = array[pivot_location], array[0]
         return array[0]
 
     def _partition(self, array):
         pivot = array[0]
+        # i marks the left-most value that is more than the pivot.
         i = 1
 
         for j in range(1, len(array)):
-            # i marks the left-most value that is more than the
-            # pivot. If array[j] is less than or equal to the pivot, swap the
-            # value at j with the value at i and increment the pointer i.
+            # If array[j] is less than or equal to the pivot, swap the
+            # value at j with the value at i and increment the value of  i.
             # If x is greater than the pivot, continue to the next value
             # in the array
             if array[j] <= pivot:
@@ -64,5 +91,5 @@ if __name__ == '__main__':
     with open(filename) as f:
         int_list = [int(val.strip()) for val in f.readlines()]
 
-    qs = quick_sort(int_list, 'last')
+    qs = quick_sort(int_list, 'median')
     print(qs.num_comparisons)
