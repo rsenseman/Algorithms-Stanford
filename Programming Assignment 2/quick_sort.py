@@ -2,12 +2,13 @@ import sys
 # use numpy to enable in-place sorting. Info on lists vs. numpy arrays
 # here: https://webcourses.ucf.edu/courses/1249560/pages/python-lists-vs-numpy-arrays-what-is-the-difference
 import numpy as np
+import random
 
 
 class quick_sort():
-    def __init__(self, array, pivot='first'):
+    def __init__(self, array, pivot='random'):
         self.num_comparisons = 0
-        assert (pivot in ('first', 'last', 'median')), "Pivot type not \
+        assert (pivot in ('first', 'last', 'median', 'random')), "Pivot type not \
             recognized"
         self.pivot = pivot
         self.array = np.array(array)
@@ -32,6 +33,7 @@ class quick_sort():
     def _choose_pivot(self, array, n):
         if self.pivot == 'first': pivot_location = 0
         elif self.pivot == 'last': pivot_location = n - 1
+        elif self.pivot == 'random': pivot_location = random.randint(0, n - 1)
         else:
             first_val = array[0]
             last_val = array[-1]
@@ -91,5 +93,5 @@ if __name__ == '__main__':
     with open(filename) as f:
         int_list = [int(val.strip()) for val in f.readlines()]
 
-    qs = quick_sort(int_list, 'median')
+    qs = quick_sort(int_list, 'random')
     print(qs.num_comparisons)
