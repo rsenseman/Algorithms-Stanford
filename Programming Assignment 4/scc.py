@@ -3,14 +3,22 @@ import sys
 
 class dfs_loop():
     def __init__(self, graph, search_order=None):
+        '''variables s and t from lecture are handled by algorithm structure.
+
+        The variable t is implicit as the index of the nodes_by_finishing time
+        array to which nodes are appended as they are explored
+
+        The variable s is the node_start argument passed to dfs_iterative. self.s
+        is included in the __init__ function to preserve functionality of the
+        recursive dfs function
+        '''
         self.graph = graph
         self.s = None  # second pass only
-        self.search_order = search_order if search_order else list(range(1, len(graph) + 1))  # nodes ordered 1 to n
+        self.search_order = search_order if search_order else list(range(0, len(graph)))  # nodes ordered 0 to n-1
         # print(f'search order: {self.search_order}')
         self.nodes_explored = set()
-        self.priority_stack = []
 
-        self.leaders = [None] * (len(graph) + 1)
+        self.leaders = [None] * len(graph)
         self.nodes_by_finishing_time = [] # replacemnt for variable t, only used for first pass
 
         self.loop()
@@ -25,25 +33,24 @@ class dfs_loop():
         seperate from search_order to prioritize exploration of node children
         while maintaining record keeping of leaders
         '''
-        while self.search_order or self.priority_stack:
-            if self.priority_stack:
-                node = self.priority_stack.pop()
-                if node not in self.nodes_explored:
-                    self.dfs_iterative(node)
-            else:
-                node = self.search_order.pop()
-                if node not in self.nodes_explored:
-                    self.s = node
-                    self.dfs_iterative(node)
+        while self.search_order:
+            node = self.search_order.pop()
+            if node not in self.nodes_explored:
+                self.dfs_iterative(node)
 
-    def dfs_iterative(self, node):
-        self.nodes_explored.add(node)
-        self.leaders[node] = self.s
+    def dfs_iterative(self, node_start):
+        dfs_stack = [node_start]
 
-        for arc in self.graph[node]:
-            if arc not in self.nodes_explored:
-                self.priority_stack.append(arc)
-        self.nodes_by_finishing_time.append(node)
+        while dfs_stack:
+            node = dfs_stack.pop()
+            if node not in self.nodes_explored:
+                self.nodes_explored.add(node)
+                self.leaders[node] = node_start
+                self.nodes_by_finishing_time.append(node)
+
+                for arc in self.graph[node]:
+                    if arc not in self.nodes_explored:
+                        dfs_stack.append(arc)
 
     def loop_recursive(self):
         while self.search_order:
@@ -79,9 +86,9 @@ class graph():
                 self.graph[y]['incoming'].append(x)
             else:
                 self.graph[y] = {'outgoing': [], 'incoming': [x]}
+        print(f'{len(self.graph)} elements added to graph')
 
     def find_strongly_connected_components(self):
-        print(f'{max(self.graph)} elements')
         print('starting first loop...')
         first_loop = dfs_loop(
             {k: self.graph[k]['incoming'] for k in self.graph.keys()}
@@ -97,16 +104,17 @@ class graph():
 
 
 def count_occurences(list_in):
-    counter = [0] * (len(list_in) + 1)
+    counter = [0] * len(list_in)
     for x in list_in:
-        if x:
-            counter[x] += 1
+        counter[x] += 1
 
     return sorted(counter, reverse=True)
 
 
 def make_pair_from_row(row):
-    return [int(val) for val in row.strip().split(' ')]
+    ''' cast strings to integers and subtract one to change from 1-indexed
+    to 0-indexed'''
+    return [int(val)-1 for val in row.strip().split(' ')]
 
 
 if __name__ == '__main__':
@@ -117,6 +125,5 @@ if __name__ == '__main__':
 
     g = graph(pair_list)
     leaders = g.find_strongly_connected_components()
-    print(f'Second Loop Leaders: {leaders}')
     largest_sccs = count_occurences(leaders)
     print(largest_sccs[:10])
