@@ -7,7 +7,7 @@ class Graph():
         # graph structure is {
         #    Node:
         #        incoming: [(length, source), ...]
-        #        outgoing: [(length, source), ...]
+        #        outgoing: [(length, target), ...]
         #        greedy_score: 1000000
         # }
         self.graph = {}
